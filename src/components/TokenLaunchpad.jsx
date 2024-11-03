@@ -9,12 +9,12 @@ export function TokenLaunchpad() {
     const [name, setName] = useState("");
     const [symbol, setSymbol] = useState("");
     const [uri, setUri] = useState("");
-    const [ initialSupply, setInitialSupply] = useState(0);
+    const [ initialSupply, setInitialSupply] = useState(100);
     const [decimal, setDecimal] = useState(2)
     const wallet = useWallet()
     const { connection } = useConnection()
     async function createToken(){
-        const isFormVaid = name.trim() !== "" && symbol.trim() !== ""
+        const isFormVaid = name.trim() !== "" && symbol.trim() !== "" && initialSupply !== 0
         const keypair = Keypair.generate()
         if(!isFormVaid){
             alert("Please fil the details")
@@ -43,7 +43,7 @@ export function TokenLaunchpad() {
             }),
             // createInitializeMint2Instruction(keypair.publicKey, 6, wallet.publicKey, wallet.publicKey, TOKEN_PROGRAM_ID)
             createInitializeMetadataPointerInstruction(keypair.publicKey, wallet.publicKey, keypair.publicKey, TOKEN_2022_PROGRAM_ID),
-            createInitializeMint2Instruction(keypair.publicKey, 6,wallet.publicKey, wallet.publicKey, TOKEN_2022_PROGRAM_ID),
+            createInitializeMint2Instruction(keypair.publicKey, decimal,wallet.publicKey, wallet.publicKey, TOKEN_2022_PROGRAM_ID),
             createInitializeInstruction({
                 programId: TOKEN_2022_PROGRAM_ID,
                 mint: keypair.publicKey,
@@ -86,7 +86,7 @@ export function TokenLaunchpad() {
                 keypair.publicKey,
                 associatedToken,
                 wallet.publicKey,
-                100000,
+                initialSupply * 10 ** decimal,
                 [],
                 TOKEN_2022_PROGRAM_ID
             )
