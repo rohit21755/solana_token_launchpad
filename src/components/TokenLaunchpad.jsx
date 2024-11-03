@@ -12,6 +12,8 @@ export function TokenLaunchpad() {
     const [ initialSupply, setInitialSupply] = useState(100);
     const [decimal, setDecimal] = useState(2)
     const wallet = useWallet()
+    const [current, setCurrent] = useState("");
+    const [open, setOpen] = useState(false)
     const { connection } = useConnection()
     async function createToken(){
         const isFormVaid = name.trim() !== "" && symbol.trim() !== "" && initialSupply !== 0
@@ -20,6 +22,9 @@ export function TokenLaunchpad() {
             alert("Please fil the details")
             return
         }
+        alert("You need to confirm three transactions")
+        setOpen(true)
+        setCurrent("Creating Mint Account")
         const metaData = {
             mint: keypair.publicKey,
             name: name || 'KIRA',
@@ -61,7 +66,7 @@ export function TokenLaunchpad() {
         await wallet.sendTransaction(transaction, connection)
         
         console.log("Token mint created")
-
+        setCurrent("Creating associated Token Account")
         const associatedToken = getAssociatedTokenAddressSync(
             keypair.publicKey, wallet.publicKey, false, TOKEN_2022_PROGRAM_ID
         )
@@ -77,10 +82,12 @@ export function TokenLaunchpad() {
         try {
             await wallet.sendTransaction(transaction2, connection);
         } catch (error) {
+            setOpen(false)
+            setCurrent("")
             alert("Transaction rejected by the user.");
             return;
         }
-
+        setCurrent("Mininting the Tokens")
         const transaction3 = new Transaction().add(
             createMintToInstruction(
                 keypair.publicKey,
@@ -92,9 +99,19 @@ export function TokenLaunchpad() {
             )
         )
         await wallet.sendTransaction(transaction3, connection);
-        console.log("Minted")
-        window.open(`https://explorer.solana.com/address/${keypair.publicKey.toBase58()}?cluster=devnet`)
+        setCurrent("Token Minted :)")
+        setOpen(false)
+        setCurrent("")
+        alert("Go to Token mint",`https://explorer.solana.com/address/${keypair.publicKey.toBase58()}?cluster=devnet` )
         
+        
+    }
+    if(open){
+        return<>
+        <div className="text-center">
+            {current}
+        </div>
+        </>
     }
 
     if(!wallet.publicKey) {
